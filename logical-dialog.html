@@ -1,0 +1,177 @@
+<dom-module id="logical-dialog">
+	<style>
+		h2 {
+			display: block;
+			text-align: center;
+			padding-bottom: 25px;
+			min-width: 250px;
+		}
+		paper-icon-button {
+			position: absolute;
+			top: 0;
+		}
+		paper-icon-button[icon="close"] {
+			right: 0;
+			color: var(--logical-dialog-close-color);
+			margin-top: 0;
+		}
+		paper-icon-button[icon="close"]:hover {
+			color: var(--logical-dialog-close-color-hover);
+		}
+		paper-icon-button.edit {
+			left: 0;
+			margin-top: 0;
+		}
+		paper-icon-button.edit:hover {
+			color: red;
+		}
+		paper-dialog {
+			padding: 0 25px 25px 25px;
+			margin-top: 0;
+		}
+	</style>
+	<template>
+		<paper-dialog
+			animation-config="[[animationConfig]]"
+			id="pd"
+			no-esc="[[noEsc]]"
+			no-cancel-on-outside-click="[[!outsideClick]]">
+			<div>			
+				<paper-icon-button icon="editor:mode-edit" on-tap="edit" hidden="[[!editButton]]"></paper-icon-button>
+				<h2>[[heading]]</h2>
+				<paper-icon-button icon="close" on-tap="close" hidden="[[hideClose]]"></paper-icon-button>
+			</div>
+			<content></content>
+		</paper-dialog>
+	</template>
+	<script>
+		Polymer({
+			is: 'logical-dialog',
+			listeners: {
+				'keydown': '_handleKey',
+				'iron-overlay-closed': '_closed',
+				'iron-overlay-opened': '_opened'
+			},
+			properties: {
+				// animation configuration
+				animationConfig: {
+					value: function(){
+						return {
+							'entry': {
+								name: 'scale-up-animation',
+								timing: { duration: 250 },
+								node: this.$.pd
+							},
+							'exit': {
+								name: 'fade-out-animation',
+								timing: { duration: 150 },
+								node: this.$.pd
+							}
+						};
+					},
+					
+				},
+				hideClose: {
+					type: Boolean,
+					value: false
+				},
+				heading: {
+					type: String,
+				},
+				editable: {
+					type: Boolean,
+					value: false
+				},
+				editButton: {
+					type: Boolean,
+					value: false
+				},
+				editVariable: {
+					type: String,
+				},
+				enterPressed: {
+					type: String,
+					value: null
+				},
+				whenCanceled: {
+					type: String,
+					value: null
+				},
+				ignoreOthers: {
+					type: Boolean,
+					value: false
+				},
+				nextDialog: {
+					type: String,
+				},
+				opened: {
+					type: Boolean,
+					value: false,
+					reflectToAttribute: true
+				},
+				openMe: {
+					type: Boolean,
+					value: false
+				},
+				// disables the animation
+				noAnimation: {
+					type: Boolean,
+					value: true,
+					
+				},
+				noEsc: {
+					type: Boolean,
+					value: false
+				},
+			},
+			attached: function(e,d,o) {
+				if(this.openMe) {
+					if(document.readyState === 'complete') this.open();
+					else window.addEventListener('load', function(){ this.open() }.bind(this));
+				}
+			},
+			cancel: function() {
+				BPC.overlayed = this.opened = false;
+				this.$.pd.cancel();
+			},
+			close: function() {
+				this.$.pd.close();
+				if(this.nextDialog)
+					this.parentNode._dialog(this.nextDialog);
+			},
+			edit: function() {
+				this.editButton = false;
+				this.parentNode[this.editVariable] = true;
+				this.fit();
+			},
+			fit: function() {
+				this.$.pd.fit();
+			},
+			open: function() {
+				if(this.editable) this.editButton = true;
+				this.$.pd.open();
+			},
+			_closed: function(event) {
+				BPC.overlayed = this.opened = false;
+				if(this.$.pd.canceled && this.whenCanceled)
+					this.parentNode[this.whenCanceled]();
+			},
+			_opened: function(event) {
+				BPC.overlayed = this.opened = true;
+			},
+			_handleKey: function(e) {
+				if(this.enterPressed != null) {
+					var ENTER = 13;
+		    		if(e.keyCode === ENTER) {
+		    			this.parentNode[this.enterPressed]();
+		    		}
+		    		e.stopPropagation();
+				}
+	     	},
+	     	get dialog() {
+	     		return this.$.pd;
+	     	}
+
+		});
+	</script>
+</dom-module>
