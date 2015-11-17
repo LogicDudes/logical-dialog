@@ -1,0 +1,28 @@
+{
+  "name": "logical-dialog",
+  "homepage": "https://logicdudes.github.io/logical-dialog",
+  "authors": [
+    "Kevin Ashcraft <kevin@kevashcraft.com>"
+  ],
+  "description": "wrapper for paper-dialog",
+  "main": "logical-dialog.html",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "paper-dialog"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "paper-dialog": "polymerelements/paper-dialog#~1.0.2"
+  }
+}
