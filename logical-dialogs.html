@@ -1,0 +1,422 @@
+<dom-module id="logical-dialogs">
+<style include="logical-style-flex"></style>
+<style>
+	:host {
+		display: block;
+	}
+	paper-material {
+		padding: 25px;
+
+	}
+	.navigation {
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		padding: 0;
+	}
+	.navigation .stretch {
+		flex-grow: 1;
+	}
+	.navigation paper-icon-button{
+		right: 0;
+
+	}
+	neon-animated-pages {
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		height: 250px;	
+		width: 250px;	
+	}
+	neon-animated-pages.medium {
+		height: 300px;
+	}
+	neon-animated-pages.small {
+		height: 150px;
+	}
+	h2 {
+		margin: 0;
+	}
+	h3 {
+		margin: 15px;
+		font-weight: normal;
+	}
+
+
+
+	paper-button {
+		font-size: 18px;
+	}
+
+
+	.width-150 {
+		display: inline-block;
+		width: 150px;
+	}
+
+	paper-input {
+		--paper-input-container-input: {
+			text-align: center;
+		};
+	}
+
+	paper-input.input-upper-case {
+		--paper-input-container-input: {
+			text-align: center;
+			text-transform: uppercase;
+		};
+	}
+
+	div paper-input:last-of-type {
+		margin-left: 15px;
+	}
+
+	.error {
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.error a, .error a:visited {
+		text-decoration: none;
+		color: var(--el-a-color, blue);
+		font-weight: bolder;
+	}
+	.error a:hover {
+		color: var(--el-a-color-hover, orange);
+	}
+
+</style>
+<template>
+	<paper-material elevation="2">
+		<neon-animated-pages id="Steps" selected="[[StepSelected]]"
+			class$="[[StepClass]]"
+			entry-animation="[[entryAnimation]]"
+			exit-animation="[[exitAnimation]]"
+			>
+		<neon-animatable class="medium">
+			<div>
+				<paper-input
+					label="Call Sign"
+					value="{{callsign}}"
+					class="input-upper-case width-150"
+					allowed-pattern="[a-zA-Z0-9]*"
+					maxlength="6"
+					prevent-invalid-input
+					disabled="[[processing]]"
+					autofocus
+				></paper-input>
+			</div>
+			<div class="flex-box">
+				<paper-input
+					label="Password"
+					value="{{password}}"
+					type="password"
+					char-counter
+					auto-validate
+					minlength="8"
+					error-message="Needs to be more than 7"
+					on-change="_passwordConfirmValidator"
+					disabled="[[processing]]"
+				></paper-input>
+				<paper-input
+					label="Confirm Password" id="passwordConfirm"
+					value="{{passwordConfirm}}"
+					type="password"
+					disabled$="[[_any(processing, passwordConfirmDisabled)]]"
+					on-blur="_passwordConfirmValidate"
+					on-keyup="_passwordConfirmValidator"
+					error-message="Doesn't match"
+				></paper-input>
+			</div>
+			<div>
+				<el-tip tip="Callsign Confirmation">
+					<paper-input
+						label="ARRL Email Address"
+						value="[[email]]"
+						disabled
+					></paper-input>
+				</el-tip>
+			</div>
+			<div class="flex-box around align min-width">
+				<paper-button on-click="Register" raised>
+					<span hidden="[[processing]]">Register</span>
+					<paper-spinner active="[[processing]]" hidden="[[!processing]]"></paper-spinner>
+				</paper-button>
+				<el-tip tip="Back to Login">
+					<paper-icon-button icon="communication:vpn-key"
+						on-tap="_inc"
+						data-path="Step"
+						disabled="[[processing]]"
+					></paper-icon-button>
+				</el-tip>
+			</div>
+			<div class="error" hidden="[[!processingError]]">
+				<span>This is taking <i>too</i> long</span>
+				<a
+					href="mailto:km4fpa@arrl.net?subject=Eagle Logger Error - Login Stuck&body=The login is stuck."
+					title="km4fpa@arrl.net"
+					target="_blank"
+					on-tap="dialogClose"
+				>Email Someone</a>
+			</div>
+		</neon-animatable>
+		<neon-animatable class="medium">
+			<div>
+				<paper-input label="Call Sign" id="callsign"
+					value="{{callsign}}"
+					class="input-upper-case width-150"
+					autofocus$="[[!callsign]]"
+					disabled="[[processing]]"
+				></paper-input>
+			</div>
+			<div>
+				<paper-input label="Password"
+					value="{{password}}"
+					type="password"
+					disabled="[[processing]]"
+					autofocus
+				></paper-input>
+			</div>
+			<div class="flex-box around align min-width">
+				<el-tip tip="New User">
+					<paper-icon-button icon="social:group-add"
+						on-tap="_dec"
+						data-path="Step"
+						disabled="[[processing]]"
+					></paper-icon-button>
+				</el-tip>
+				<paper-button on-tap="Login" raised>
+					<span hidden="[[processing]]">Login</span>
+					<paper-spinner active="[[processing]]" hidden="[[!processing]]"></paper-spinner>
+				</paper-button>
+				<el-tip tip="Forgotten Password">
+					<paper-icon-button icon="communication:vpn-key"
+						on-tap="_inc"
+						data-path="Step"
+						disabled="[[processing]]"
+					></paper-icon-button>
+				</el-tip>
+			</div>
+			<div class="error" hidden="[[!processingError]]">
+				<span>This is taking <i>too</i> long</span>
+				<a
+					href="mailto:km4fpa@arrl.net?subject=Eagle Logger Error - Login Stuck&body=The login is stuck."
+					title="km4fpa@arrl.net"
+					target="_blank"
+					on-tap="dialogClose"
+				>Email Someone</a>
+			</div>
+		</neon-animatable>
+		<neon-animatable class="medium">
+			<div hidden="[[processing]]">
+				<paper-input label="Call Sign"
+					value="{{callsign}}"
+					class="input-upper-case width-150"
+					allowed-pattern="[a-zA-Z0-9]*"
+					maxlength="6"
+					prevent-invalid-input
+					autofocus
+				></paper-input>
+			</div>
+			<div hidden="[[!processing]]">
+				<strong>Check your ARRL email for a link!</strong>
+			</div>
+			<div class="flex-box around align">
+				<el-tip tip="Back to Login">
+					<paper-icon-button icon="communication:vpn-key"
+						on-tap="_dec"
+						data-path="Step"
+						hidden="[[processing]]"
+					></paper-icon-button>
+				</el-tip>
+				<paper-button on-tap="_Reset" hidden="[[processing]]" raised>Reset</paper-button>
+				<paper-button on-tap="dialogClose" hidden="[[!processing]]" raised>OK</paper-button>
+			</div>
+		</neon-animatable>
+	</neon-animated-pages>
+	<iron-a11y-keys keys="enter" on-keys-pressed="onEnterPress" target="[[NeonAnimatedPages]]"></iron-a11y-keys>
+	<iron-localstorage name="callsign" value="{{callsign}}"></iron-localstorage>
+</template>
+</dom-module>
+<script>
+	Polymer({
+		is: 'logical-dialogs',
+
+		properties: {
+
+			NeonAnimatedPages: {
+				type: Object,
+				value: function() {
+					return this.$.Steps;
+				}
+			},
+
+			opened: {
+				type: Boolean,
+				value: false,
+				reflectToAttribute: true
+			},
+			
+			email: {
+				type: String,
+				computed: '__email(callsign)'
+			},
+
+			passwordConfirmDisabled: {
+				type: Boolean,
+				computed: '__passwordConfirmDisabled(password)',
+				value: true
+			},
+		},
+
+		behaviors: [
+			Polymer.IronOverlayBehavior,
+			Polymer.LogicalBaseBehavior,
+			Polymer.LogicalBehaviorDialog,
+		],
+		observers: [
+			'StepChanged(Step)',
+		],
+		ready: function() {
+
+			this.StepElements = this.$.Steps.children;
+			this.processing = false;
+			this.processingError = false;
+		},
+		// sets initial attributes for dialog 
+		attached: function() {
+
+			// this.noAutoFocus = true;
+			// this.noCancelOnOutsideClick = true;
+			// this.noCancelOnEscKey = true;
+		},
+
+		// steps creation back one step
+		StepChanged: function() {
+
+			if(this.Step < this.StepSelected) { // going back
+				this.entryAnimation = 'slide-from-left-animation';
+				this.exitAnimation = 'slide-right-animation';
+			} else { // going forward
+				this.entryAnimation = 'slide-from-right-animation';
+				this.exitAnimation = 'slide-left-animation';
+			}
+
+			var StepElement = this.StepElements[this.Step]; 
+
+
+			this.StepClass = StepElement.classList[0];
+			this.StepSelected = this.Step;
+
+			var input = StepElement.querySelector('[autofocus]');
+			if(input) {
+				setTimeout(function(){
+					this._focus(input);
+				}.bind(this), 450);
+			}
+
+		},
+
+		// opens the dialog and sets variables
+		open: function() {
+
+			// start at login (step 1)
+			this.Step = 1;
+			// set opened attribute
+			this.opened = true;
+			this.password = '';
+		},
+
+		// request a login
+		Login: function() {
+
+			this.processing = true;
+			EL.jaxson('Site/SiteUserLogin', { SiteUserUsername: this.callsign, SiteUserPassword: this.password }, this);
+		},
+
+		onEnterPress: function() {
+		
+			console.log("this.StepSelected", this.StepSelected);
+
+			switch(this.StepSelected) {
+				case 0:
+					this.Register();
+				break;
+				case 1:
+					this.Login();
+				break;
+				case 2:
+					this.Reset();
+				break;
+			}
+		},
+	
+
+		// request to register
+		Register: function() {
+
+			if(this.password == this.passwordConfirm) {
+
+				EL.jaxson('Site/SiteUserRegister', { SiteUserUsername: this.callsign, SiteUserPassword: this.password }, this);
+				this.processing = true;
+			} else {
+				EL.toast('Password confirmation does not match');
+			}
+		},
+		// request a password reset email
+		Reset: function() {
+			this.processing = true;
+		},
+		// enable password confirm on blur
+		_passwordConfirmValidate: function() {
+			// only if not disabled (there's a valid password)
+			if(!this.passwordConfirmDisabled) {
+				// update status boolean
+				this.passwordConfirmTouched = true;
+				// validate current password confirmation
+				this._passwordConfirmValidator();
+			}
+		},
+		// confirms the passwords match
+		_passwordConfirmValidator: function() {
+			if(!this.passwordConfirmTouched) return;
+			this.$.passwordConfirm.invalid = this.password != this.passwordConfirm;
+		},
+		// a timeout for the processor
+		_processingTimer: function() {
+			if(this.processing) {
+				setTimeout(function(){
+					this.processingError = true;
+				}.bind(this), 3000);
+			}
+		},
+		// sets the email address
+		__email: function() {
+			return this.callsign ? this.callsign + '@arrl.net' : '';
+		},
+		// returns true if password length too short
+		__passwordConfirmDisabled: function() {
+			return this.password < 7;
+		},
+
+		_jaxson: function(info) {
+			switch(info.request) {
+				case 'SiteUserRegister':
+					if(info.SiteUser)
+						EL.toast('Thank you for registering!');
+				case 'SiteUserLogin':
+					if(info.SiteUser) {
+						info.SiteUser.isAuthed = true;
+						EL.SiteUser = info.SiteUser;
+						this.close();
+					}
+					this.processing = false;
+				break;
+			}
+		},
+		
+		
+	});
+</script>
