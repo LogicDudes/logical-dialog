@@ -1,0 +1,85 @@
+<script>
+Polymer.LogicalMultiDialogBehaviorImpl = {
+
+	properties: {
+
+		NeonAnimatedPages: {
+			type: Object,
+			value: function() {
+				return this.$.Steps;
+			}
+		},
+
+		opened: {
+			type: Boolean,
+			value: false,
+			reflectToAttribute: true
+		},
+	},
+
+	observers: [
+		'StepChanged(Step)',
+	],
+
+	listeners: {
+		'iron-overlay-opened': 'fiting'
+	},
+
+	ready: function() {
+
+		this.StepElements = this.$.Steps.children;
+		this.noAutoFocus = true;
+		this.noCancelOnOutsideClick = true;
+		this.noCancelOnEscKey = true;
+		this.initStep = 0;
+	// var isInputText = obj instanceof HTMLInputElement && obj.type == 'text';
+// 
+	},
+
+	fiting: function() {
+	
+		console.log("jnjnjnjn");
+		this.fit();
+	},
+	
+
+	// steps creation back one step
+	StepChanged: function() {
+
+		if(this.Step < this.StepSelected) { // going back
+			this.entryAnimation = 'slide-from-left-animation';
+			this.exitAnimation = 'slide-right-animation';
+		} else { // going forward
+			this.entryAnimation = 'slide-from-right-animation';
+			this.exitAnimation = 'slide-left-animation';
+		}
+
+		var StepElement = this.StepElements[this.Step]; 
+
+
+		this.StepClass = StepElement.classList[0];
+		this.StepSelected = this.Step;
+
+		var input = StepElement.querySelector('[autofocus]');
+		if(input) {
+			setTimeout(function(){
+				this._focus(input);
+			}.bind(this), 450);
+		}
+
+	},
+
+	// opens the dialog and sets variables
+	open: function() {
+
+		// start at login (step 1)
+		this.Step = this.initStep;
+		// set opened attribute
+		this.opened = true;
+	},
+
+	
+};
+
+Polymer.LogicalMultiDialogBehavior = [ Polymer.IronOverlayBehavior, Polymer.LogicalMultiDialogBehaviorImpl ];
+</script>

@@ -1,0 +1,87 @@
+:host {
+	display: block;
+}
+paper-material {
+	padding: 25px;
+
+}
+.navigation {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 0;
+}
+.navigation .stretch {
+	flex-grow: 1;
+}
+.navigation paper-icon-button{
+	right: 0;
+
+}
+neon-animated-pages {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	height: 250px;	
+	width: 250px;	
+}
+neon-animated-pages.medium {
+	height: 300px;
+}
+neon-animated-pages.small {
+	height: 150px;
+}
+h2 {
+	text-align: center;
+	margin: 0;
+}
+h3 {
+	margin: 15px;
+	font-weight: normal;
+}
+
+
+
+paper-button {
+	font-size: 18px;
+}
+
+
+.width-150 {
+	display: inline-block;
+	width: 150px;
+}
+
+paper-input {
+	--paper-input-container-input: {
+		text-align: center;
+	};
+}
+
+paper-input.input-upper-case {
+	--paper-input-container-input: {
+		text-align: center;
+		text-transform: uppercase;
+	};
+}
+
+div paper-input:last-of-type {
+	margin-left: 15px;
+}
+
+.error {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.error a, .error a:visited {
+	text-decoration: none;
+	color: var(--el-a-color, blue);
+	font-weight: bolder;
+}
+.error a:hover {
+	color: var(--el-a-color-hover, orange);
+}
+
