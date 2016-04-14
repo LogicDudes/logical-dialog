@@ -1,11 +1,19 @@
-<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="/bower_components/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="/bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <dom-module id="logical-dialog">
 	<style>
-		h2 {
+		paper-material {
+			background: #fff;
+			@apply(--layout-vertical);
+		}
+		header {
 			display: block;
 			text-align: center;
-			padding-bottom: 25px;
-			min-width: 250px;
+			padding: 25px 25px 0;
+		}
+		h2 {
+			display: inline-block;
+			margin: 0;
 		}
 		paper-icon-button {
 			position: absolute;
@@ -19,67 +27,77 @@
 		paper-icon-button[icon="close"]:hover {
 			color: var(--logical-dialog-close-color-hover);
 		}
-		paper-dialog {
-			padding: 0 25px 25px 25px;
-			margin-top: 0;
+		paper-dialog-scrollable {
+			padding: 15px 25px 25px;
+			flex-grow: 1;
 		}
+
+		:host {
+			--paper-dialog-scrollable: {
+				overflow-x: hidden;
+				};
+			}
+
+		@media (max-height: 600px) {
+			paper-dialog-scrollable {
+				max-height: 300px;
+			}
+
+		}
+
 	</style>
 	<template>
-		<paper-dialog
-			animation-config="[[animationConfig]]"
-			id="pd"
-			no-auto-focus
-			no-esc="[[noEsc]]"
-			no-cancel-on-outside-click="[[!outsideClick]]">
-			<div>			
+		<paper-material>
+			<header>				
 				<h2>[[heading]]</h2>
 				<paper-icon-button icon="close" on-tap="close" hidden="[[hideClose]]"></paper-icon-button>
-			</div>
-			<content id="content"></content>
-		</paper-dialog>
+			</header>
+			<paper-dialog-scrollable id="pd">
+				<content id="content"></content>
+			</paper-dialog-scrollable>
+		</paper-material>
 	</template>
 	<script>
 		Polymer({
 			is: 'logical-dialog',
 			listeners: {
 				'keydown': '_handleKey',
-				'iron-overlay-closed': '_closed',
 				'iron-overlay-opened': '_opened'
 			},
+			behaviors: [
+				Polymer.PaperDialogBehavior,
+			],
 			properties: {
 				// animation configuration
-				animationConfig: {
-					value: function(){
-						return {
-							'entry': {
-								name: 'scale-up-animation',
-								timing: { duration: 250 },
-								node: this.$.pd
-							},
-							'exit': {
-								name: 'fade-out-animation',
-								timing: { duration: 150 },
-								node: this.$.pd
-							}
-						};
-					},
+				// animationConfig: {
+				// 	value: function(){
+				// 		return {
+				// 			'entry': {
+				// 				name: 'scale-up-animation',
+				// 				timing: { duration: 250 },
+				// 				node: this.$.pd
+				// 			},
+				// 			'exit': {
+				// 				name: 'fade-out-animation',
+				// 				timing: { duration: 150 },
+				// 				node: this.$.pd
+				// 			}
+				// 		};
+				// 	},
 					
-				},
+				// },
 				hideClose: {
 					type: Boolean,
 					value: false
 				},
 				heading: {
 					type: String,
+					value: ''
 				},
 				opened: {
 					type: Boolean,
 					value: false,
 					reflectToAttribute: true
-				},
-				openMe: {
-					type: Boolean,
-					value: false
 				},
 				// disables the animation
 				noAnimation: {
@@ -91,50 +109,35 @@
 					value: false
 				},
 			},
-			attached: function(e,d,o) {
-				if(this.openMe) {
-					if(document.readyState === 'complete') this.open();
-					else window.addEventListener('load', function(){ this.open() }.bind(this));
-				}
+			observers: [
+				'PropertySetter(noEsc)',
+			],
+
+			ready: function() {
+			
+				this.$.pd.dialogElement = this;
 			},
-			cancel: function() {
-				LogicalApp.overlayed = this.opened = false;
-				this.$.pd.cancel();
-			},
-			close: function() {
-				this.$.pd.close();
-				if(this.nextDialog)
-					this.parentNode._dialog(this.nextDialog);
-			},
-			edit: function() {
-				this.editButton = false;
-				this.parentNode[this.editVariable] = true;
-				this.fit();
-			},
-			fit: function() {
-				this.$.pd.fit();
-			},
-			open: function() {
-				if(this.editable) this.editButton = true;
-				this.$.pd.open();
-			},
-			_closed: function(event) {
-				LogicalApp.overlayed = this.opened = false;
-				if(this.$.pd.canceled && this.whenCanceled)
-					this.parentNode[this.whenCanceled]();
-			},
+			
+
 			_opened: function(event) {
-				LogicalApp.overlayed = this.opened = true;
-				var nodes = Polymer.dom(this.$.content).getDistributedNodes();
+				if(event.target != this) return;
+				var af,
+						nodes = Polymer.dom(this.$.content).getDistributedNodes();
+
 				for (var i = 0; i < nodes.length; i++) {
 					if(nodes[i].nodeType === Node.ELEMENT_NODE) {
-						if(nodes[i].hasAttribute('autofocus')) {
-							LogicalApp._focus(nodes[i]);
-							break;						
+						if(af = nodes[i].querySelector('[autofocus]')) {
+							LogicalApp._focus(af);
 						}
 					}
 				};
 			},
+			PropertySetter: function() {
+			
+				this.set('noCancelOnOutsideClick', this.noEsc);
+				this.set('noCancelOnEscKey', this.noEsc);
+			},
+			
 			_handleKey: function(e) {
 				// enter pressed
 	    		if(e.keyCode === 13) {
@@ -142,10 +145,6 @@
 	    		}
 	    		e.stopPropagation();
 	     	},
-	     	get dialog() {
-	     		return this.$.pd;
-	     	}
-
 		});
 	</script>
 </dom-module>
