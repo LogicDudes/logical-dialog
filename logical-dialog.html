@@ -3,7 +3,7 @@
 <dom-module id="logical-dialog">
 	<style>
 		paper-material {
-			background: #fff;
+			/*background: #fff;*/
 			@apply(--layout-vertical);
 		}
 		header {
@@ -62,7 +62,8 @@
 			is: 'logical-dialog',
 			listeners: {
 				'keydown': '_handleKey',
-				'iron-overlay-opened': '_opened'
+				'iron-overlay-opened': '_opened',
+
 			},
 			behaviors: [
 				Polymer.PaperDialogBehavior,
@@ -118,9 +119,13 @@
 				this.$.pd.dialogElement = this;
 			},
 			
+			
 
 			_opened: function(event) {
+				// console.log("event.target", event.target);
 				if(event.target != this) return;
+				console.log("FOCUSING", event.target);
+
 				var af,
 						nodes = Polymer.dom(this.$.content).getDistributedNodes();
 
